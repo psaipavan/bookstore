@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Book | Discover, Read & Explore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body {
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+            color: #1a1a1a;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            position:fixed;top:10px;left:30px;right:30px;width:calc(100% - 60px);
+            display:flex;justify-content:space-between;align-items:center;
+            background:rgba(255,255,255,0.4);backdrop-filter:blur(15px);
+            border:1px solid rgba(255,255,255,0.5);border-radius:16px;
+            padding:15px 20px;z-index:1000;transition:transform 0.4s ease;
+        }
+        header.hide{transform:translateY(-120%);}
+        .logo{display:flex;align-items:center;font-size:1.5rem;font-weight:700;}
+        .logo img{width:40px;height:40px;margin-right:10px;border-radius:50%;}
+        .menu-btn{font-size:24px;cursor:pointer;background:none;border:none;color:#1a1a1a;}
+
+        .sidebar{position:fixed;top:0;left:-260px;width:260px;height:100%;background:rgba(255,255,255,0.4);
+            backdrop-filter:blur(20px);border-right:1px solid rgba(255,255,255,0.5);transition:left 0.5s ease;padding-top:80px;z-index:999;}
+        .sidebar.active{left:0;}
+        .sidebar a{display:block;padding:15px 25px;color:#1a1a1a;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.3);transition:all 0.3s ease;font-size:1rem;}
+        .sidebar a:hover{background:rgba(255,255,255,0.6);padding-left:35px;}
+        .sidebar a i{margin-right:10px;width:20px;text-align:center;}
+
+        .content{text-align:center;padding:120px 20px 40px;max-width:1200px;margin:auto;width:100%;position:relative;z-index:10;}
+
+        /* Navigation items for large screens */
+        .nav-items {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-items a {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .nav-items a:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Hide nav items on mobile, show on desktop */
+        @media (max-width: 768px) {
+            .nav-items {
+                display: none;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .menu-btn {
+                display: none;
+            }
+            .nav-items {
+                display: flex;
+            }
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            padding: 50px 20px;
+            text-align: center;
+            overflow: hidden;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            text-shadow: 0 5px 15px rgba(255,255,255,0.4);
+        }
+        
+        .hero p {
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            color: rgba(26,26,26,0.9);
+        }
+        
+        .explore-btn {
+            padding: 18px 45px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8);
+            border-radius: 50px;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .explore-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #D8BFD8, #FFB6C1);
+        }
+        
+        .explore-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Stats Section */
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 60px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            min-width: 150px;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        
+        .stat:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+            color: #1a1a1a;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: rgba(26,26,26,0.8);
+        }
+        
+        /* FEATURES */
+        .features{margin:100px 0;}
+        .features h2{
+            font-size:2.5rem;
+            margin-bottom:40px;
+            color: #1a1a1a;
+        }
+        .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px;}
+        .feature{
+            background:rgba(255,255,255,0.4);
+            backdrop-filter: blur(15px);
+            border-radius:20px;
+            padding:30px;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        .feature:hover {
+            transform: translateY(-10px);
+            background: rgba(255,255,255,0.5);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .feature i{
+            font-size:40px;
+            margin-bottom:15px;
+            color: #1a1a1a;
+        }
+        .feature h3{
+            font-size:1.3rem;
+            margin-bottom:10px;
+            color: #1a1a1a;
+        }
+        .feature p {
+            color: rgba(26,26,26,0.8);
+        }
+
+        /* CATEGORIES */
+        .categories{margin:100px 0;}
+        .categories h2{
+            font-size:2.5rem;
+            margin-bottom:40px;
+            color: #1a1a1a;
+        }
+        .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:25px;}
+        .cat-card{
+            background:rgba(255,255,255,0.4);
+            backdrop-filter: blur(15px);
+            border-radius:15px;
+            padding:25px;
+            font-weight:600;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            color: #1a1a1a;
+            font-size: 1.1rem;
+        }
+        .cat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        .cat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* TESTIMONIALS */
+        .testimonials{margin:100px 0;}
+        .testimonials h2{
+            font-size:2.5rem;
+            margin-bottom:30px;
+            color: #1a1a1a;
+        }
+        .test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:25px;}
+        .test{
+            background:rgba(255,255,255,0.4);
+            backdrop-filter: blur(15px);
+            padding:25px;
+            border-radius:15px;
+            font-style:italic;
+            border: 1px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+            color: rgba(26,26,26,0.9);
+        }
+        .test::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        .test span{display:block;margin-top:10px;font-weight:600;color: #1a1a1a;}
+
+        /* TEAM */
+        .team {
+            margin: 100px 0;
+            padding: 60px 20px;
+            position: relative;
+        }
+        
+        .team h2 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #1a1a1a;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .team h2::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        
+        .team-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .member {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .member::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        
+        .member:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Cartoon Avatar Container */
+        .avatar-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 25px;
+            position: relative;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        /* Sai Pavan Avatar - Founder */
+        .avatar-founder {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .avatar-founder .head {
+            width: 80px;
+            height: 80px;
+            background: #FFD6B0;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 2;
+        }
+        
+        .avatar-founder .hair {
+            width: 85px;
+            height: 40px;
+            background: #8B4513;
+            border-radius: 40px 40px 0 0;
+            position: absolute;
+            top: 5px;
+            left: 17px;
+            z-index: 1;
+        }
+        
+        .avatar-founder .glasses {
+            width: 70px;
+            height: 25px;
+            position: absolute;
+            top: 40px;
+            left: 25px;
+            z-index: 3;
+        }
+        
+        .avatar-founder .glasses::before,
+        .avatar-founder .glasses::after {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border: 3px solid #1a1a1a;
+            border-radius: 50%;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .avatar-founder .glasses::before {
+            left: 0;
+        }
+        
+        .avatar-founder .glasses::after {
+            right: 0;
+        }
+        
+        .avatar-founder .glasses span {
+            position: absolute;
+            width: 8px;
+            height: 3px;
+            background: #1a1a1a;
+            top: 13px;
+            left: 31px;
+        }
+        
+        .avatar-founder .body {
+            width: 70px;
+            height: 50px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            position: absolute;
+            top: 85px;
+            left: 25px;
+            z-index: 1;
+        }
+        
+        .avatar-founder .laptop {
+            width: 40px;
+            height: 25px;
+            background: white;
+            border-radius: 5px;
+            position: absolute;
+            top: 95px;
+            left: 45px;
+            z-index: 2;
+        }
+        
+        .avatar-founder .laptop::before {
+            content: "";
+            width: 35px;
+            height: 3px;
+            background: #1a1a1a;
+            position: absolute;
+            top: -8px;
+            left: 2px;
+            border-radius: 2px;
+        }
+        
+        /* Aravind Avatar - Backend Engineer */
+        .avatar-backend {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .avatar-backend .head {
+            width: 75px;
+            height: 75px;
+            background: #FFB8B8;
+            border-radius: 50%;
+            position: absolute;
+            top: 15px;
+            left: 22px;
+            z-index: 2;
+        }
+        
+        .avatar-backend .hair {
+            width: 80px;
+            height: 35px;
+            background: #2C3E50;
+            border-radius: 40px 40px 0 0;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 1;
+        }
+        
+        .avatar-backend .body {
+            width: 65px;
+            height: 45px;
+            background: white;
+            border-radius: 15px;
+            position: absolute;
+            top: 80px;
+            left: 27px;
+            z-index: 1;
+        }
+        
+        .avatar-backend .server {
+            width: 35px;
+            height: 40px;
+            background: #1a1a1a;
+            border-radius: 5px;
+            position: absolute;
+            top: 75px;
+            left: 15px;
+            z-index: 2;
+        }
+        
+        .avatar-backend .server::before,
+        .avatar-backend .server::after {
+            content: "";
+            width: 25px;
+            height: 4px;
+            background: white;
+            border-radius: 2px;
+            position: absolute;
+            left: 5px;
+        }
+        
+        .avatar-backend .server::before {
+            top: 10px;
+        }
+        
+        .avatar-backend .server::after {
+            top: 20px;
+        }
+        
+        .avatar-backend .code {
+            position: absolute;
+            top: 45px;
+            left: 85px;
+            font-family: monospace;
+            font-size: 10px;
+            color: #1a1a1a;
+            transform: rotate(15deg);
+        }
+        
+        /* Padmini Avatar - UI/UX Designer */
+        .avatar-designer {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .avatar-designer .head {
+            width: 70px;
+            height: 70px;
+            background: #FFE0B2;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            z-index: 2;
+        }
+        
+        .avatar-designer .hair {
+            width: 80px;
+            height: 50px;
+            background: #8B4513;
+            border-radius: 40px 40px 0 0;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 1;
+        }
+        
+        .avatar-designer .hair::after {
+            content: "";
+            width: 60px;
+            height: 30px;
+            background: #8B4513;
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            border-radius: 0 0 30px 30px;
+        }
+        
+        .avatar-designer .body {
+            width: 60px;
+            height: 40px;
+            background: white;
+            border-radius: 15px;
+            position: absolute;
+            top: 85px;
+            left: 30px;
+            z-index: 1;
+        }
+        
+        .avatar-designer .palette {
+            width: 40px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            position: absolute;
+            top: 75px;
+            left: 15px;
+            z-index: 2;
+        }
+        
+        .avatar-designer .color-dots {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+        }
+        
+        .avatar-designer .color-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 2px;
+        }
+        
+        .avatar-designer .color-dots span:nth-child(1) { background: white; }
+        .avatar-designer .color-dots span:nth-child(2) { background: #b21f1f; }
+        .avatar-designer .color-dots span:nth-child(3) { background: #1a1a1a; }
+        .avatar-designer .color-dots span:nth-child(4) { background: #FFD700; }
+        
+        .avatar-designer .pencil {
+            width: 25px;
+            height: 4px;
+            background: white;
+            position: absolute;
+            top: 90px;
+            left: 75px;
+            transform: rotate(45deg);
+        }
+        
+        .avatar-designer .pencil::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            position: absolute;
+            right: -3px;
+            top: -1px;
+        }
+        
+        /* Member Info */
+        .member h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        
+        .member p {
+            font-size: 1.1rem;
+            color: rgba(26,26,26,0.8);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .member-social {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+        }
+
+        .social-link i {
+            color: #1a1a1a;
+        }
+
+        .social-link:hover {
+            background: #1a1a1a;
+            transform: translateY(-3px);
+        }
+
+        .social-link:hover i {
+            color: white;
+        }
+
+        /* FAQ */
+        .faq{margin:100px 0;text-align:left;}
+        .faq h2{
+            text-align:center;
+            font-size:2.5rem;
+            margin-bottom:30px;
+            color: #1a1a1a;
+        }
+        details{
+            background:rgba(255,255,255,0.4);
+            backdrop-filter: blur(15px);
+            margin-bottom:15px;
+            padding:20px;
+            border-radius:10px;
+            border: 1px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        details::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        summary{
+            font-weight:600;
+            cursor:pointer;
+            color: #1a1a1a;
+            font-size: 1.1rem;
+        }
+        details p {
+            margin-top: 10px;
+            color: rgba(26,26,26,0.8);
+        }
+
+        /* CONTACT */
+        .contact{margin:100px 0;}
+        .contact h2{
+            font-size:2.5rem;
+            margin-bottom:30px;
+            color: #1a1a1a;
+        }
+        .contact-info{
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.5);
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .contact-info::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        .contact-info p{
+            margin:20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: #1a1a1a;
+        }
+        .contact-info p:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.6);
+        }
+        .contact-info i {
+            color: #1a1a1a;
+            margin-right: 15px;
+            width: 25px;
+        }
+
+        footer{
+            background:rgba(255,255,255,0.4);
+            backdrop-filter:blur(15px);
+            padding:30px 20px;
+            text-align:center;
+            border-top: 1px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        footer p {
+            font-size: 1.1rem;
+            color: #1a1a1a;
+        }
+
+        /* Realistic Flying Bird Animations */
+        .bird{
+            background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/174479/bird-cells-new.svg');
+            filter: invert(34%) sepia(55%) saturate(427%) hue-rotate(141deg) brightness(93%) contrast(91%);
+            background-size: auto 100%;
+            width: 88px;
+            height: 125px;
+            will-change: background-position;
+            position: absolute;
+            animation-name: fly-cycle;
+            animation-timing-function: steps(10);
+            animation-iteration-count: infinite;
+        }
+
+        .bird-one{
+            animation-duration: 1s;
+            animation-delay: -0.5s;
+        }
+        .bird-two{ 
+          animation-duration: 0.9s; 
+          animation-delay: -0.75s; 
+        }
+        .bird-three{
+            animation-duration:1.25s;
+            animation-delay: -0.25s
+        }
+        .bird-four{
+            animation-duration: 1.1s;
+            animation-delay: -0.5s;
+        }
+
+        .bird-container {
+            position: fixed;
+            top: 10%;
+            left: -3%;
+            transform: scale(0) translateX(-10vw);
+            will-change: transform;
+            animation-name: fly-right-one;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+            
+        .bird-container-one{
+            animation-duration: 15s;
+            animation-delay: 0;
+            top: 15%;
+        }
+            
+        .bird-container-two{
+            animation-duration: 16s;
+            animation-delay: 1s;
+            top: 25%;
+        }
+            
+        .bird-container-three{
+            animation-duration: 14.6s;
+            animation-delay: 9.5s;
+            top: 35%;
+        }
+            
+        .bird-container-four {
+            animation-duration: 16s;
+            animation-delay: 10.25s;
+            top: 20%;
+        }
+
+        @keyframes fly-cycle {
+            100% {
+                background-position: -900px 0;
+            }
+        }
+
+        @keyframes fly-right-one {
+            0% {
+                transform: scale(0.3) translateX(-10vw);
+            }
+            10% {
+                transform: translateY(2vh) translateX(10vw) scale(0.4);
+            }
+            20% {
+                transform: translateY(0vh) translateX(30vw) scale(0.5);
+            }
+            30% {
+                transform: translateY(4vh) translateX(50vw) scale(0.6);
+            }
+            40% {
+                transform: translateY(2vh) translateX(70vw) scale(0.6);
+            }
+            50% {
+                transform: translateY(0vh) translateX(90vw) scale(0.6);
+            }
+            60% {
+                transform: translateY(0vh) translateX(110vw) scale(0.6);
+            }
+            100% {
+                transform: translateY(0vh) translateX(110vw) scale(0.6);
+            }
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 1200px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            .hero p {
+                font-size: 1.3rem;
+            }
+            .features h2, .categories h2, .testimonials h2, .team h2, .faq h2, .contact h2 {
+                font-size: 2.3rem;
+            }
+            .stat-number {
+                font-size: 2.3rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.7rem;
+            }
+            .hero p {
+                font-size: 1.2rem;
+            }
+            .features h2, .categories h2, .testimonials h2, .team h2, .faq h2, .contact h2 {
+                font-size: 2.1rem;
+            }
+            .explore-btn {
+                font-size: 1.1rem;
+                padding: 16px 35px;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            .nav-items a {
+                font-size: 0.95rem;
+            }
+            .stat-number {
+                font-size: 2.1rem;
+            }
+            .team h2 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 100px 15px 30px;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            .hero p {
+                font-size: 1.1rem;
+            }
+            .features h2, .categories h2, .testimonials h2, .team h2, .faq h2, .contact h2 {
+                font-size: 1.9rem;
+            }
+            .explore-btn {
+                font-size: 1rem;
+                padding: 14px 30px;
+            }
+            .hero-stats {
+                gap: 20px;
+            }
+            .stat {
+                padding: 15px 20px;
+                min-width: 120px;
+            }
+            .stat-number {
+                font-size: 1.9rem;
+            }
+            .team h2 {
+                font-size: 2rem;
+            }
+            .team-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            .avatar-container {
+                width: 120px;
+                height: 120px;
+            }
+            .avatar-founder,
+            .avatar-backend,
+            .avatar-designer {
+                transform: scale(0.9);
+            }
+            .logo {
+                font-size: 1.3rem;
+            }
+            .logo img {
+                width: 35px;
+                height: 35px;
+            }
+            .nav-items a {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+            }
+            .sidebar a {
+                font-size: 0.95rem;
+                padding: 12px 20px;
+            }
+            footer p {
+                font-size: 1rem;
+            }
+            header {
+                left: 15px;
+                right: 15px;
+                width: calc(100% - 30px);
+                padding: 12px 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+            .features h2, .categories h2, .testimonials h2, .team h2, .faq h2, .contact h2 {
+                font-size: 1.7rem;
+            }
+            .explore-btn {
+                font-size: 0.95rem;
+                padding: 12px 25px;
+            }
+            .stat-number {
+                font-size: 1.7rem;
+            }
+            .team h2 {
+                font-size: 1.7rem;
+            }
+            .member h3 {
+                font-size: 1.3rem;
+            }
+            .member p {
+                font-size: 1rem;
+            }
+            .logo {
+                font-size: 1.2rem;
+            }
+            .logo img {
+                width: 30px;
+                height: 30px;
+            }
+            .menu-btn {
+                font-size: 20px;
+            }
+            footer p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+            .features h2, .categories h2, .testimonials h2, .team h2, .faq h2, .contact h2 {
+                font-size: 1.5rem;
+            }
+            .explore-btn {
+                font-size: 0.9rem;
+            }
+            .stat {
+                min-width: 100px;
+                padding: 12px 15px;
+            }
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .bird-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<header id="header">
+    <div class="logo"><img src="{{url_for('static',filename='images/logo.png')}}" alt="logo">Find Your Book</div>
+    
+    <!-- Navigation items for desktop -->
+    <div class="nav-items">
+        <a href="/adminlogin1"><i class="fas fa-user-shield"></i> Admin Login</a>
+        <a href="/user_login1"><i class="fas fa-user"></i> User Login</a>
+        <a href="/user_signup1"><i class="fas fa-user-plus"></i> User Signup</a>
+    </div>
+    
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+</header>
+
+    <div id="sidebar" class="sidebar">
+        <a href="#" onclick="toggleSidebar()"><i class="fas fa-times"></i> Close</a>
+        <a href="/adminlogin1"><i class="fas fa-user-shield"></i> Admin Login</a>
+        <a href="/user_login1"><i class="fas fa-user"></i> User Login</a>
+        <a href="/user_signup1"><i class="fas fa-user-plus"></i> User Signup</a>
+    </div>
+
+    <div class="content">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to Find Your Book</h1>
+                <p>Discover your next favorite story from thousands of titles curated for every reader.</p>
+                <a href="/user_login1" class="explore-btn">Start Exploring</a>
+                
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="bookCount">10,000+</span>
+                        <span class="stat-label">Books Available</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="genreCount">50+</span>
+                        <span class="stat-label">Genres</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="authorCount">5,000+</span>
+                        <span class="stat-label">Authors</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section class="features">
+            <h2>Why Choose Us?</h2>
+            <div class="features-grid">
+                <div class="feature"><i class="fas fa-search"></i><h3>Smart Search</h3><p>Find any book instantly with AI-powered recommendations.</p></div>
+                <div class="feature"><i class="fas fa-heart"></i><h3>Personalized Choices</h3><p>Get book suggestions based on your taste and past reads.</p></div>
+                <div class="feature"><i class="fas fa-lock"></i><h3>Secure Login</h3><p>Protected user accounts for safe and private reading journeys.</p></div>
+                <div class="feature"><i class="fas fa-star"></i><h3>Top Rated</h3><p>Only the best-reviewed and trusted titles across genres.</p></div>
+            </div>
+        </section>
+
+        <!-- CATEGORIES -->
+        <section class="categories">
+            <h2>Popular Categories</h2>
+            <div class="cat-grid">
+                <div class="cat-card">📖 Fiction</div>
+                <div class="cat-card">💼 Business</div>
+                <div class="cat-card">🧠 Self Help</div>
+                <div class="cat-card">🎓 Education</div>
+                <div class="cat-card">🔬 Science</div>
+                <div class="cat-card">❤️ Romance</div>
+                <div class="cat-card">🎭 Mystery</div>
+                <div class="cat-card">🚀 Sci-Fi</div>
+            </div>
+        </section>
+
+        <!-- TESTIMONIALS -->
+        <section class="testimonials">
+            <h2>What Our Readers Say</h2>
+            <div class="test-grid">
+                <div class="test">"The best platform for discovering hidden gems!" <span>- Riya Sharma</span></div>
+                <div class="test">"User-friendly and beautifully designed." <span>- Aarav Patel</span></div>
+                <div class="test">"I found all my favorite authors here!" <span>- Meera Nair</span></div>
+            </div>
+        </section>
+
+        <!-- TEAM -->
+        <section class="team">
+            <h2>Meet Our Team</h2>
+            <div class="team-grid">
+                <div class="member">
+                    <div class="avatar-container">
+                        <div class="avatar-founder">
+                            <div class="hair"></div>
+                            <div class="head"></div>
+                            <div class="glasses">
+                                <span></span>
+                            </div>
+                            <div class="body"></div>
+                            <div class="laptop"></div>
+                        </div>
+                    </div>
+                    <h3>Sai Pavan Pulluri</h3>
+                    <p>Founder & Full Stack Developer</p>
+                    <div class="member-social">
+                        <a href="https://www.linkedin.com/in/saipavan-pulluri-430286224/" class="social-link" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://github.com/psaipavan" class="social-link" target="_blank"><i class="fab fa-github"></i></a>
+                        <a href="https://x.com/SaipavanPu2028" class="social-link" target="_blank"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                
+                <div class="member">
+                    <div class="avatar-container">
+                        <div class="avatar-backend">
+                            <div class="hair"></div>
+                            <div class="head"></div>
+                            <div class="body"></div>
+                            <div class="server"></div>
+                            <div class="code">&lt;/&gt;</div>
+                        </div>
+                    </div>
+                    <h3>Aravind Reddy</h3>
+                    <p>Backend Engineer</p>
+                    <div class="member-social">
+                        <a href="https://www.linkedin.com/in/aravind-reddy-yeddula-950309279/" class="social-link" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://github.com/yaravindreddy99-eng" class="social-link" target="_blank"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="member">
+                    <div class="avatar-container">
+                        <div class="avatar-designer">
+                            <div class="hair"></div>
+                            <div class="head"></div>
+                            <div class="body"></div>
+                            <div class="palette"></div>
+                            <div class="color-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <div class="pencil"></div>
+                        </div>
+                    </div>
+                    <h3>Chennupati Padmini</h3>
+                    <p>UI/UX Designer</p>
+                    <div class="member-social">
+                        <a href="https://www.linkedin.com/in/chennupati-padmini-a1b151275" class="social-link" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://github.com/chennupatiPadmini" class="social-link" target="_blank"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq">
+            <h2>Frequently Asked Questions</h2>
+            <details><summary>How do I create an account?</summary><p>Click on "User Signup" in the menu and fill in your details.</p></details>
+            <details><summary>Is my data safe?</summary><p>Yes! We use encryption and secure logins to protect your account.</p></details>
+            <details><summary>Can I read books online?</summary><p>Currently, we provide book details and purchase links.</p></details>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="contact">
+            <h2>Contact Us</h2>
+            <div class="contact-info">
+                <p><i class="fas fa-envelope"></i> codexdeploy@gmail.com</p>
+                <p><i class="fas fa-phone"></i> +91 9177485834</p>
+                <p><i class="fas fa-map-marker-alt"></i> Hyderabad, India</p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>© 2025 Find Your Book | Built with ❤️ by Sai Pavan Pulluri</p>
+    </footer>
+
+    <!-- Realistic Flying Birds -->
+    <div class="bird-container bird-container-one">
+       <div class="bird bird-one"></div>
+    </div>        
+    <div class="bird-container bird-container-two">
+      <div class="bird bird-two"></div>
+    </div>  
+     <div class="bird-container bird-container-three">
+       <div class="bird bird-three"></div>
+     </div> 
+     <div class="bird-container bird-container-four">
+       <div class="bird bird-four"></div>
+     </div>
+
+    <script>
+        function toggleSidebar(){document.getElementById("sidebar").classList.toggle("active");}
+        let lastScrollTop=0;const header=document.getElementById('header');
+        window.addEventListener('scroll',()=>{let scrollTop=window.scrollY;
+            if(scrollTop>lastScrollTop&&scrollTop>100){header.classList.add('hide');}
+            else if(scrollTop<lastScrollTop){header.classList.remove('hide');}
+            lastScrollTop=scrollTop<=0?0:scrollTop;
+        });
+        
+        document.querySelectorAll('.contact-info p').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Animate stats counting up
+        function animateCounter(element, target, duration) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    element.textContent = target + "+";
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(start) + "+";
+                }
+            }, 16);
+        }
+        
+        // Start animation when page loads
+        window.addEventListener('load', () => {
+            animateCounter(document.getElementById('bookCount'), 10000, 2000);
+            animateCounter(document.getElementById('genreCount'), 50, 1500);
+            animateCounter(document.getElementById('authorCount'), 5000, 1800);
+        });
+    </script>
+</body>
+</html>

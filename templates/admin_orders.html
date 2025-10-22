@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Orders | Find Your Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+body { background: linear-gradient(135deg,#87CEEB,#D8BFD8,#FFB6C1); min-height:100vh; color:#1a1a1a; display:flex; flex-direction:column; }
+header { 
+    position:fixed; 
+    top:10px; 
+    left:30px; 
+    right:30px; 
+    width:calc(100% - 60px);
+    display:flex; 
+    justify-content:space-between; 
+    align-items:center; 
+    background:rgba(255,255,255,0.4); 
+    backdrop-filter:blur(15px); 
+    border:1px solid rgba(255,255,255,0.5); 
+    border-radius:16px; 
+    padding:15px 20px; 
+    z-index:1000; 
+    transition:transform 0.4s ease; 
+}
+header.hide { transform:translateY(-120%); }
+.logo { display:flex; align-items:center; font-size:1.5rem; font-weight:700; }
+.logo img { width:40px; height:40px; margin-right:10px; border-radius:50%; }
+.menu-btn { font-size:24px; cursor:pointer; background:none; border:none; color:#1a1a1a; }
+.sidebar { position:fixed; top:0; left:-260px; width:260px; height:100%; background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border-right:1px solid rgba(255,255,255,0.5); transition:left 0.5s ease; padding-top:80px; z-index:999; }
+.sidebar.active { left:0; }
+.sidebar a { display:block; padding:15px 25px; color:#1a1a1a; text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.3); transition:all 0.3s ease; font-size:1rem; }
+.sidebar a:hover { background: rgba(255,255,255,0.6); padding-left:35px; }
+.sidebar a i { margin-right:10px; width:20px; text-align:center; }
+.content { 
+    flex:1; 
+    padding:120px 20px 40px; 
+    max-width:1400px; 
+    margin:auto; 
+    width:100%; 
+    position: relative;
+    z-index: 10;
+}
+.nav-items { display:flex; gap:30px; align-items:center; }
+.nav-items a { color:#1a1a1a; text-decoration:none; font-weight:500; padding:8px 16px; border-radius:8px; transition:all 0.3s ease; font-size:1rem; }
+.nav-items a:hover { background: rgba(255,255,255,0.5); }
+a { text-decoration:none; }
+@media (max-width:768px) { .nav-items{display:none;} .menu-btn{display:block;} }
+@media (min-width:769px) { .menu-btn{display:none;} .nav-items{display:flex;} }
+footer { 
+    background: rgba(255,255,255,0.4); 
+    backdrop-filter: blur(15px); 
+    padding:30px 20px; 
+    text-align:center; 
+    border-top:1px solid rgba(255,255,255,0.5); 
+    position:relative; 
+    overflow:hidden; 
+    color:#1a1a1a; 
+    z-index: 10;
+}
+
+footer p {
+    font-size: 1.1rem;
+}
+
+.page-header { text-align:center; margin-bottom:50px; }
+.page-header h1 { font-size:3rem; margin-bottom:15px; text-shadow:0 5px 15px rgba(255,255,255,0.4); }
+.page-header p { font-size:1.2rem; color:rgba(26,26,26,0.9); max-width:600px; margin:0 auto; }
+
+.orders-container { margin-bottom:50px; }
+.orders-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:25px; }
+.order-card { 
+    background: rgba(255,255,255,0.4); 
+    backdrop-filter:blur(15px); 
+    border-radius:20px; 
+    padding:25px; 
+    border:1px solid rgba(255,255,255,0.5); 
+    transition:all 0.4s ease; 
+    position:relative; 
+}
+.order-card:hover { 
+    transform:translateY(-5px); 
+    box-shadow:0 10px 25px rgba(0,0,0,0.15); 
+    background: rgba(255,255,255,0.5);
+}
+.order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+.order-id { font-weight:700; font-size:1.1rem; color:#1a1a1a; }
+.order-date { color:rgba(26,26,26,0.7); font-size:0.9rem; }
+.order-customer { margin-bottom:15px; }
+.customer-name { font-weight:600; margin-bottom:5px; }
+.customer-email { color:rgba(26,26,26,0.7); font-size:0.9rem; }
+.order-items { margin-bottom:15px; }
+.order-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.3); }
+.item-name { flex:2; }
+.item-qty { flex:1; text-align:center; }
+.item-price { flex:1; text-align:right; }
+.order-total { display:flex; justify-content:space-between; font-weight:700; font-size:1.1rem; margin-bottom:15px; }
+.order-status { display:inline-block; padding:6px 15px; border-radius:20px; font-size:0.85rem; font-weight:600; text-transform:uppercase; }
+.status-pending { background:rgba(255,193,7,0.3); color:#856404; }
+.status-confirmed { background:rgba(0,123,255,0.3); color:#004085; }
+.status-shipped { background:rgba(23,162,184,0.3); color:#0c5460; }
+.status-delivered { background:rgba(40,167,69,0.3); color:#155724; }
+.status-cancelled { background:rgba(220,53,69,0.3); color:#721c24; }
+
+.search-filter { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:20px; }
+.search-box { position:relative; max-width:400px; width:100%; }
+.search-input { width:100%; padding:12px 20px 12px 45px; background: rgba(255,255,255,0.5); backdrop-filter: blur(15px); border:1px solid rgba(255,255,255,0.5); border-radius:50px; color:#1a1a1a; font-size:0.95rem; transition: all 0.3s ease; }
+.search-input:focus { outline:none; background: rgba(255,255,255,0.6); box-shadow:0 0 0 3px rgba(255,255,255,0.3); }
+.search-input::placeholder { color: rgba(26,26,26,0.7); }
+.search-icon { position:absolute; left:15px; top:50%; transform:translateY(-50%); color: rgba(26,26,26,0.7); }
+.filter-select { padding:12px 20px; background: rgba(255,255,255,0.5); backdrop-filter:blur(15px); border:1px solid rgba(255,255,255,0.5); border-radius:50px; color:#1a1a1a; font-size:0.95rem; transition: all 0.3s ease; min-width:200px; }
+.filter-select:focus { outline:none; background: rgba(255,255,255,0.6); box-shadow:0 0 0 3px rgba(255,255,255,0.3); }
+
+.no-orders { text-align:center; padding:60px 20px; background: rgba(255,255,255,0.4); backdrop-filter: blur(15px); border-radius: 20px; border:1px solid rgba(255,255,255,0.5); color:#1a1a1a; }
+.no-orders i { font-size:4rem; margin-bottom:20px; }
+.no-orders h3 { font-size:1.8rem; margin-bottom:10px; }
+.no-orders p { max-width:500px; margin:0 auto; font-size:1.1rem; }
+
+/* Realistic Flying Bird Animations */
+.bird{
+    background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/174479/bird-cells-new.svg');
+    filter: invert(34%) sepia(55%) saturate(427%) hue-rotate(141deg) brightness(93%) contrast(91%);
+    background-size: auto 100%;
+    width: 88px;
+    height: 125px;
+    will-change: background-position;
+    position: absolute;
+    animation-name: fly-cycle;
+    animation-timing-function: steps(10);
+    animation-iteration-count: infinite;
+}
+
+.bird-one{
+    animation-duration: 1s;
+    animation-delay: -0.5s;
+}
+.bird-two{ 
+  animation-duration: 0.9s; 
+  animation-delay: -0.75s; 
+}
+.bird-three{
+    animation-duration:1.25s;
+    animation-delay: -0.25s
+}
+.bird-four{
+    animation-duration: 1.1s;
+    animation-delay: -0.5s;
+}
+
+.bird-container {
+    position: fixed;
+    top: 10%;
+    left: -3%;
+    transform: scale(0) translateX(-10vw);
+    will-change: transform;
+    animation-name: fly-right-one;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+	
+.bird-container-one{
+    animation-duration: 15s;
+    animation-delay: 0;
+    top: 15%;
+}
+	
+.bird-container-two{
+    animation-duration: 16s;
+    animation-delay: 1s;
+    top: 25%;
+}
+	
+.bird-container-three{
+    animation-duration: 14.6s;
+    animation-delay: 9.5s;
+    top: 35%;
+}
+	
+.bird-container-four {
+    animation-duration: 16s;
+    animation-delay: 10.25s;
+    top: 20%;
+}
+
+@keyframes fly-cycle {
+    100% {
+        background-position: -900px 0;
+    }
+}
+
+@keyframes fly-right-one {
+    0% {
+        transform: scale(0.3) translateX(-10vw);
+    }
+    10% {
+        transform: translateY(2vh) translateX(10vw) scale(0.4);
+    }
+    20% {
+        transform: translateY(0vh) translateX(30vw) scale(0.5);
+    }
+    30% {
+        transform: translateY(4vh) translateX(50vw) scale(0.6);
+    }
+    40% {
+        transform: translateY(2vh) translateX(70vw) scale(0.6);
+    }
+    50% {
+        transform: translateY(0vh) translateX(90vw) scale(0.6);
+    }
+    60% {
+        transform: translateY(0vh) translateX(110vw) scale(0.6);
+    }
+    100% {
+        transform: translateY(0vh) translateX(110vw) scale(0.6);
+    }
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 1200px) {
+    .page-header h1 { font-size: 2.7rem; }
+    .page-header p { font-size: 1.15rem; }
+    .orders-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+}
+
+@media (max-width: 992px) { 
+    .orders-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .page-header h1 { font-size: 2.4rem; }
+    .page-header p { font-size: 1.1rem; }
+    .logo { font-size: 1.4rem; }
+    .nav-items a { font-size: 0.95rem; }
+}
+
+@media (max-width: 768px){ 
+    .content{padding:100px 15px 30px;} 
+    .page-header h1{font-size:2rem;} 
+    .page-header p { font-size: 1rem; max-width: 90%; }
+    .orders-grid { grid-template-columns: 1fr; gap: 20px; }
+    .search-filter { flex-direction: column; align-items: stretch; }
+    .search-box, .filter-select { max-width: 100%; }
+    .logo { font-size: 1.3rem; }
+    .logo img { width: 35px; height: 35px; }
+    .nav-items a { font-size: 0.9rem; padding: 6px 12px; }
+    .sidebar a { font-size: 0.95rem; padding: 12px 20px; }
+    footer p { font-size: 1rem; }
+    header { left: 15px; right: 15px; width: calc(100% - 30px); padding: 12px 15px; }
+}
+
+@media (max-width: 576px) {
+    .page-header h1 { font-size: 1.7rem; }
+    .page-header p { font-size: 0.9rem; }
+    .order-card { padding: 20px; }
+    .order-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .logo { font-size: 1.2rem; }
+    .logo img { width: 30px; height: 30px; }
+    .menu-btn { font-size: 20px; }
+    footer p { font-size: 0.9rem; }
+}
+
+@media (max-width:1024px) {
+    .bird-container { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header id="header">
+<div class="logo"><img src="{{url_for('static',filename='images/logo.png')}}" alt="logo"><span>Admin Panel</span></div>
+<div class="nav-items">
+<a href="/admin_dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+<a href="/admin_addproducts1"><i class="fas fa-plus-circle"></i> Add Products</a>
+<a href="/admin_manageproducts1"><i class="fas fa-edit"></i> Manage Products</a>
+<a href="/admin_users"><i class="fas fa-user-friends"></i> User Management</a>
+<a href="/home"><i class="fas fa-home"></i> Home</a>
+</div>
+<button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+</header>
+
+<div id="sidebar" class="sidebar">
+<a href="#" onclick="toggleSidebar()"><i class="fas fa-times"></i> Close</a>
+<a href="/admin_dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+<a href="/admin_addproducts1"><i class="fas fa-plus-circle"></i> Add Products</a>
+<a href="/admin_manageproducts1"><i class="fas fa-edit"></i> Manage Products</a>
+<a href="/admin_users"><i class="fas fa-user-friends"></i> User Management</a>
+<a href="/home"><i class="fas fa-home"></i> Home</a>
+</div>
+
+<div class="content">
+<div class="page-header">
+<h1>Order Management</h1>
+<p>View and track all customer orders and their status.</p>
+</div>
+
+<div class="search-filter">
+<div class="search-box">
+<i class="fas fa-search search-icon"></i>
+<input type="text" class="search-input" placeholder="Search orders by ID, customer name, or email...">
+</div>
+<select class="filter-select" id="statusFilter">
+<option value="">All Statuses</option>
+<option value="pending">Pending</option>
+<option value="confirmed">Confirmed</option>
+<option value="shipped">Shipped</option>
+<option value="delivered">Delivered</option>
+<option value="cancelled">Cancelled</option>
+</select>
+</div>
+
+<div class="orders-container">
+<div class="orders-grid">
+{% for order in orders %}
+<div class="order-card" data-status="{{ order.status }}">
+<div class="order-header">
+<span class="order-id">#ORD-{{ order.order_id }}</span>
+<span class="order-date">{{ order.date }}</span>
+</div>
+<div class="order-customer">
+<div class="customer-name">{{ order.customer_name }}</div>
+<div class="customer-email">{{ order.customer_email }}</div>
+</div>
+<div class="order-items">
+{% for item in order.order_items %}
+<div class="order-item">
+<span class="item-name">{{ item.title }}</span>
+<span class="item-qty">x{{ item.quantity }}</span>
+<span class="item-price">₹{{ item.price }}</span>
+</div>
+{% endfor %}
+</div>
+<div class="order-total">
+<span>Total:</span>
+<span>₹{{ order.total }}</span>
+</div>
+<div class="order-status status-{{ order.status }}">{{ order.status|title }}</div>
+</div>
+{% else %}
+<div class="no-orders">
+<i class="fas fa-box-open"></i>
+<h3>No Orders Found</h3>
+<p>There are no orders to display at the moment.</p>
+</div>
+{% endfor %}
+</div>
+</div>
+</div>
+
+<footer>
+<p>© 2025 Find Your Book | Built with ❤️ by Sai Pavan</p>
+</footer>
+
+<!-- Realistic Flying Birds -->
+<div class="bird-container bird-container-one">
+   <div class="bird bird-one"></div>
+</div>        
+<div class="bird-container bird-container-two">
+  <div class="bird bird-two"></div>
+</div>  
+ <div class="bird-container bird-container-three">
+   <div class="bird bird-three"></div>
+ </div> 
+ <div class="bird-container bird-container-four">
+   <div class="bird bird-four"></div>
+ </div>
+
+<script>
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("active");}
+let lastScrollTop=0; 
+window.addEventListener("scroll",()=>{
+    let st=window.scrollY; 
+    if(st>lastScrollTop && st>100){
+        document.getElementById("header").classList.add("hide");
+    }else{
+        document.getElementById("header").classList.remove("hide");
+    } 
+    lastScrollTop=st<=0?0:st;
+});
+
+// Filter orders by status
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const status = this.value;
+    const orderCards = document.querySelectorAll('.order-card');
+    
+    orderCards.forEach(card => {
+        if (status === '' || card.dataset.status === status) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Search functionality
+document.querySelector('.search-input').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const orderCards = document.querySelectorAll('.order-card');
+    
+    orderCards.forEach(card => {
+        const orderId = card.querySelector('.order-id').textContent.toLowerCase();
+        const customerName = card.querySelector('.customer-name').textContent.toLowerCase();
+        const customerEmail = card.querySelector('.customer-email').textContent.toLowerCase();
+        
+        if (orderId.includes(searchTerm) || customerName.includes(searchTerm) || customerEmail.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
+</body>
+</html>

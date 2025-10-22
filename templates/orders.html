@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | Find Your Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+        body {
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        header {
+            position: fixed; top:10px; left:30px; right:30px;
+            display:flex; justify-content:space-between; align-items:center;
+            background:rgba(255,255,255,0.4); backdrop-filter:blur(15px);
+            border-radius:16px; padding:15px 20px;
+            border:1px solid rgba(255,255,255,0.5);
+            z-index:1000; transition:transform 0.4s ease;
+        }
+        header.hide { transform:translateY(-120%); }
+        .logo { display:flex; align-items:center; font-size:1.5rem; font-weight:700; }
+        .logo img { width:40px; height:40px; margin-right:10px; border-radius:50%; }
+        .menu-btn { font-size:24px; cursor:pointer; background:none; border:none; color:#1a1a1a; }
+
+        .sidebar {
+            position:fixed; top:0; left:-260px; width:260px; height:100%;
+            background:rgba(255,255,255,0.4); backdrop-filter:blur(20px);
+            border-right:1px solid rgba(255,255,255,0.5);
+            transition:left 0.5s ease; padding-top:80px; z-index:999;
+        }
+        .sidebar.active { left:0; }
+        .sidebar a {
+            display:block; padding:15px 25px; color:#1a1a1a; text-decoration:none;
+            border-bottom:1px solid rgba(255,255,255,0.3); transition:all 0.3s ease;
+            font-size: 1rem;
+        }
+        .sidebar a:hover { background:rgba(255,255,255,0.6); padding-left:35px; }
+        .sidebar a i { margin-right:10px; width:20px; text-align:center; }
+
+        .nav-items { display:flex; gap:30px; align-items:center; }
+        .nav-items a {
+            color:#1a1a1a; text-decoration:none; font-weight:500;
+            padding:8px 16px; border-radius:8px; transition:all 0.3s ease;
+            font-size: 1rem;
+        }
+        .nav-items a:hover { background:rgba(255,255,255,0.5); }
+        @media (max-width:768px){ .nav-items{display:none;} }
+        @media (min-width:769px){ .menu-btn{display:none;} }
+
+        .content { flex:1; padding:120px 20px 40px; max-width:1200px; margin:auto; width:100%; position: relative; z-index: 10; }
+        .page-header { text-align:center; margin-bottom:40px; }
+        .page-header h1 { font-size:3rem; color:#1a1a1a; text-shadow:0 5px 15px rgba(255,255,255,0.4); margin-bottom:15px; }
+        .page-header p { font-size:1.2rem; color:rgba(26,26,26,0.9); max-width:600px; margin:0 auto; }
+
+        .orders-container { display:flex; flex-direction:column; gap:25px; }
+        .order-card {
+            background:rgba(255,255,255,0.4);
+            border-radius:20px; border:1px solid rgba(255,255,255,0.5);
+            padding:25px; backdrop-filter:blur(15px);
+            transition:all 0.3s ease; overflow:hidden; animation:fadeInUp 0.6s ease forwards;
+            opacity:0; transform:translateY(20px);
+            position: relative;
+        }
+        .order-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        @keyframes fadeInUp { to {opacity:1; transform:translateY(0);} }
+        .order-card:hover { transform:translateY(-5px); background:rgba(255,255,255,0.5); box-shadow:0 10px 25px rgba(0,0,0,0.1); }
+        .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+        .order-header h3 { font-size:1.4rem; font-weight:600; color: #1a1a1a; }
+        .order-status { padding:5px 12px; border-radius:50px; font-size:0.9rem; font-weight:600; text-transform:capitalize; }
+        .status-pending { background:rgba(255,193,7,0.8); color:black; }
+        .status-completed { background:rgba(40,167,69,0.8); color:white; }
+        .status-cancelled { background:rgba(220,53,69,0.8); color:white; }
+
+        .order-items { display:flex; flex-wrap:wrap; gap:20px; margin-top:10px; }
+        .book-item {
+            background:rgba(255,255,255,0.5);
+            border-radius:12px; padding:15px;
+            flex:1 1 250px; display:flex; align-items:center; gap:15px;
+            border:1px solid rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+        }
+        .book-item:hover {
+            background:rgba(255,255,255,0.6);
+            transform: translateY(-2px);
+        }
+        .book-item img { width:70px; height:100px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.5); }
+        .book-info h4 { font-size:1rem; margin-bottom:5px; color: #1a1a1a; }
+        .book-info p { font-size:0.9rem; color:rgba(26,26,26,0.8); }
+
+        .order-footer { margin-top:15px; display:flex; justify-content:space-between; align-items:center; font-weight:600; }
+        .order-footer span { font-size:1.1rem; color: #1a1a1a; }
+
+        .empty-orders {
+            text-align:center; padding:60px 20px;
+            background:rgba(255,255,255,0.4); border-radius:20px;
+            border:1px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .empty-orders::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        .empty-orders i { font-size:4rem; color:rgba(26,26,26,0.7); margin-bottom:20px; }
+        .empty-orders h3 { font-size:1.8rem; margin-bottom:10px; color: #1a1a1a; }
+        .empty-orders p { color:rgba(26,26,26,0.8); margin-bottom:25px; font-size: 1.1rem; }
+        .continue-shopping {
+            display:inline-block; padding:12px 30px; 
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8);
+            color:#1a1a1a; border-radius:50px; font-weight:600; 
+            text-decoration:none; transition:all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .continue-shopping:hover { 
+            transform:translateY(-3px); 
+            box-shadow:0 8px 20px rgba(0,0,0,0.1); 
+            background: linear-gradient(135deg, #D8BFD8, #FFB6C1);
+        }
+
+        footer {
+            background:rgba(255,255,255,0.4);
+            backdrop-filter:blur(15px); padding:30px 20px; text-align:center;
+            border-top:1px solid rgba(255,255,255,0.5);
+            position: relative;
+            z-index: 10;
+        }
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+        footer p { font-size:1.1rem; color:#1a1a1a; }
+
+        /* Realistic Flying Bird Animations */
+        .bird{
+            background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/174479/bird-cells-new.svg');
+            filter: invert(34%) sepia(55%) saturate(427%) hue-rotate(141deg) brightness(93%) contrast(91%);
+            background-size: auto 100%;
+            width: 88px;
+            height: 125px;
+            will-change: background-position;
+            position: absolute;
+            animation-name: fly-cycle;
+            animation-timing-function: steps(10);
+            animation-iteration-count: infinite;
+        }
+
+        .bird-one{
+            animation-duration: 1s;
+            animation-delay: -0.5s;
+        }
+        .bird-two{ 
+          animation-duration: 0.9s; 
+          animation-delay: -0.75s; 
+        }
+        .bird-three{
+            animation-duration:1.25s;
+            animation-delay: -0.25s
+        }
+        .bird-four{
+            animation-duration: 1.1s;
+            animation-delay: -0.5s;
+        }
+
+        .bird-container {
+            position: fixed;
+            top: 10%;
+            left: -3%;
+            transform: scale(0) translateX(-10vw);
+            will-change: transform;
+            animation-name: fly-right-one;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+            
+        .bird-container-one{
+            animation-duration: 15s;
+            animation-delay: 0;
+            top: 15%;
+        }
+            
+        .bird-container-two{
+            animation-duration: 16s;
+            animation-delay: 1s;
+            top: 25%;
+        }
+            
+        .bird-container-three{
+            animation-duration: 14.6s;
+            animation-delay: 9.5s;
+            top: 35%;
+        }
+            
+        .bird-container-four {
+            animation-duration: 16s;
+            animation-delay: 10.25s;
+            top: 20%;
+        }
+
+        @keyframes fly-cycle {
+            100% {
+                background-position: -900px 0;
+            }
+        }
+
+        @keyframes fly-right-one {
+            0% {
+                transform: scale(0.3) translateX(-10vw);
+            }
+            10% {
+                transform: translateY(2vh) translateX(10vw) scale(0.4);
+            }
+            20% {
+                transform: translateY(0vh) translateX(30vw) scale(0.5);
+            }
+            30% {
+                transform: translateY(4vh) translateX(50vw) scale(0.6);
+            }
+            40% {
+                transform: translateY(2vh) translateX(70vw) scale(0.6);
+            }
+            50% {
+                transform: translateY(0vh) translateX(90vw) scale(0.6);
+            }
+            60% {
+                transform: translateY(0vh) translateX(110vw) scale(0.6);
+            }
+            100% {
+                transform: translateY(0vh) translateX(110vw) scale(0.6);
+            }
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 1200px) {
+            .page-header h1 {
+                font-size: 2.7rem;
+            }
+            .page-header p {
+                font-size: 1.15rem;
+            }
+            .order-header h3 {
+                font-size: 1.3rem;
+            }
+            .empty-orders h3 {
+                font-size: 1.6rem;
+            }
+            .empty-orders p {
+                font-size: 1.05rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .page-header h1 {
+                font-size: 2.4rem;
+            }
+            .page-header p {
+                font-size: 1.1rem;
+            }
+            .order-header h3 {
+                font-size: 1.2rem;
+            }
+            .order-footer span {
+                font-size: 1rem;
+            }
+            .empty-orders h3 {
+                font-size: 1.5rem;
+            }
+            .empty-orders p {
+                font-size: 1rem;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            .nav-items a {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 768px){
+            .content {
+                padding: 100px 15px 30px;
+            }
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            .page-header p {
+                font-size: 1rem;
+            }
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .order-header h3 {
+                font-size: 1.1rem;
+            }
+            .order-items{
+                flex-direction:column;
+            }
+            .book-item{
+                flex-direction:column; 
+                text-align:center;
+            }
+            .book-item img{
+                width:100px; 
+                height:130px;
+            }
+            .order-footer {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            .order-footer span {
+                font-size: 0.95rem;
+            }
+            .empty-orders {
+                padding: 40px 15px;
+            }
+            .empty-orders i {
+                font-size: 3rem;
+                margin-bottom: 15px;
+            }
+            .empty-orders h3 {
+                font-size: 1.4rem;
+            }
+            .empty-orders p {
+                font-size: 0.95rem;
+            }
+            .continue-shopping {
+                padding: 10px 25px;
+                font-size: 0.95rem;
+            }
+            .logo {
+                font-size: 1.3rem;
+            }
+            .logo img {
+                width: 35px;
+                height: 35px;
+            }
+            .nav-items a {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+            }
+            .sidebar a {
+                font-size: 0.95rem;
+                padding: 12px 20px;
+            }
+            footer p {
+                font-size: 1rem;
+            }
+            header {
+                left: 15px;
+                right: 15px;
+                width: calc(100% - 30px);
+                padding: 12px 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.7rem;
+            }
+            .page-header p {
+                font-size: 0.9rem;
+            }
+            .order-card {
+                padding: 20px;
+            }
+            .order-header h3 {
+                font-size: 1rem;
+            }
+            .order-status {
+                font-size: 0.85rem;
+                padding: 4px 10px;
+            }
+            .book-info h4 {
+                font-size: 0.95rem;
+            }
+            .book-info p {
+                font-size: 0.85rem;
+            }
+            .empty-orders h3 {
+                font-size: 1.2rem;
+            }
+            .empty-orders p {
+                font-size: 0.9rem;
+            }
+            .continue-shopping {
+                font-size: 0.9rem;
+                padding: 9px 20px;
+            }
+            .logo {
+                font-size: 1.2rem;
+            }
+            .logo img {
+                width: 30px;
+                height: 30px;
+            }
+            .menu-btn {
+                font-size: 20px;
+            }
+            footer p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            .order-header h3 {
+                font-size: 0.95rem;
+            }
+            .empty-orders h3 {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .bird-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <div class="logo">
+            <img src="{{url_for('static',filename='images/logo.png')}}" alt="logo">
+            <span>My Orders</span>
+        </div>
+        <div class="nav-items">
+            <a href="/user_home/{{user_id}}"><i class="fas fa-home"></i> User Home</a>
+            <a href="/user_orders/{{user_id}}"><i class="fas fa-shopping-bag"></i> My Orders</a>
+        </div>
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <div id="sidebar" class="sidebar">
+        <a href="#" onclick="toggleSidebar()"><i class="fas fa-times"></i> Close</a>
+        <a href="/user_home/{{user_id}}"><i class="fas fa-home"></i> User Home</a>
+        <a href="/user_orders/{{user_id}}"><i class="fas fa-shopping-bag"></i> My Orders</a>
+    </div>
+
+    <div class="content">
+        <div class="page-header">
+            <h1>Your Orders</h1>
+            <p>View your recently placed book orders and their current status</p>
+        </div>
+
+        {% if orders %}
+        <div class="orders-container">
+            {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <h3>Order #{{order.order_id}}</h3>
+                    <span class="order-status status-{{order.status}}">{{order.status}}</span>
+                </div>
+                <div class="order-items">
+                    {% for item in order.order_items %}
+                    <div class="book-item">
+                        <img src="{{item.image}}" alt="{{item.title}}">
+                        <div class="book-info">
+                            <h4>{{item.title}}</h4>
+                            <p>Qty: {{item.quantity}}</p>
+                            <p>Price: ₹{{item.price}}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="order-footer">
+                    <span>Ordered on: {{order.date}}</span>
+                    <span>Total: ₹{{order.total}}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-orders">
+            <i class="fas fa-box-open"></i>
+            <h3>No Orders Yet</h3>
+            <p>Looks like you haven't placed any orders yet.</p>
+            <a href="/user_home/{{user_id}}" class="continue-shopping">Start Shopping</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>© 2025 Find Your Book | Built with ❤️ by Sai Pavan</p>
+    </footer>
+
+    <!-- Realistic Flying Birds -->
+    <div class="bird-container bird-container-one">
+       <div class="bird bird-one"></div>
+    </div>        
+    <div class="bird-container bird-container-two">
+      <div class="bird bird-two"></div>
+    </div>  
+     <div class="bird-container bird-container-three">
+       <div class="bird bird-three"></div>
+     </div> 
+     <div class="bird-container bird-container-four">
+       <div class="bird bird-four"></div>
+     </div>
+
+    <script>
+        function toggleSidebar(){ document.getElementById("sidebar").classList.toggle("active"); }
+        let lastScrollTop=0; const header=document.getElementById('header');
+        window.addEventListener('scroll',()=>{ let st=window.scrollY;
+            if(st>lastScrollTop&&st>100){header.classList.add('hide');}
+            else if(st<lastScrollTop){header.classList.remove('hide');}
+            lastScrollTop=st<=0?0:st;
+        });
+
+        // Add animation delays for order cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderCards = document.querySelectorAll('.order-card');
+            orderCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>

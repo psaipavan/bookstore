@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message | Find Your Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+            min-height: 100vh;
+            color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            position: fixed;
+            top: 10px;
+            left: 30px;
+            right: 30px;
+            width: calc(100% - 60px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 15px 20px;
+            z-index: 1000;
+            transition: transform 0.4s ease;
+        }
+        header.hide {
+            transform: translateY(-120%);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        .menu-btn {
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #1a1a1a;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+            transition: left 0.5s ease;
+            padding-top: 80px;
+            z-index: 999;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: #1a1a1a;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.6);
+            padding-left: 35px;
+        }
+        .sidebar a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 120px 20px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Navigation items for large screens */
+        .nav-items {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-items a {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .nav-items a:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Hide nav items on mobile, show on desktop */
+        @media (max-width: 768px) {
+            .nav-items {
+                display: none;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .menu-btn {
+                display: none;
+            }
+            .nav-items {
+                display: flex;
+            }
+        }
+
+        /* Message Container */
+        .message-container {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+
+        .message-icon {
+            font-size: 4rem;
+            margin-bottom: 25px;
+            color: #1a1a1a;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .message-container h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .message-content {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: rgba(26, 26, 26, 0.9);
+            padding: 0 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid transparent;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8);
+            color: #1a1a1a;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #D8BFD8, #FFB6C1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.5);
+            color: #1a1a1a;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #87CEEB, #D8BFD8, #FFB6C1);
+        }
+
+        footer p {
+            font-size: 1.1rem;
+            color: #1a1a1a;
+        }
+
+        /* Realistic Flying Bird Animations */
+        .bird{
+            background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/174479/bird-cells-new.svg');
+            filter: invert(34%) sepia(55%) saturate(427%) hue-rotate(141deg) brightness(93%) contrast(91%);
+            background-size: auto 100%;
+            width: 88px;
+            height: 125px;
+            will-change: background-position;
+            position: absolute;
+            animation-name: fly-cycle;
+            animation-timing-function: steps(10);
+            animation-iteration-count: infinite;
+        }
+
+        .bird-one{
+            animation-duration: 1s;
+            animation-delay: -0.5s;
+        }
+        .bird-two{ 
+          animation-duration: 0.9s; 
+          animation-delay: -0.75s; 
+        }
+        .bird-three{
+            animation-duration:1.25s;
+            animation-delay: -0.25s
+        }
+        .bird-four{
+            animation-duration: 1.1s;
+            animation-delay: -0.5s;
+        }
+
+        .bird-container {
+            position: fixed;
+            top: 10%;
+            left: -3%;
+            transform: scale(0) translateX(-10vw);
+            will-change: transform;
+            animation-name: fly-right-one;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+            
+        .bird-container-one{
+            animation-duration: 15s;
+            animation-delay: 0;
+            top: 15%;
+        }
+            
+        .bird-container-two{
+            animation-duration: 16s;
+            animation-delay: 1s;
+            top: 25%;
+        }
+            
+        .bird-container-three{
+            animation-duration: 14.6s;
+            animation-delay: 9.5s;
+            top: 35%;
+        }
+            
+        .bird-container-four {
+            animation-duration: 16s;
+            animation-delay: 10.25s;
+            top: 20%;
+        }
+
+        @keyframes fly-cycle {
+            100% {
+                background-position: -900px 0;
+            }
+        }
+
+        @keyframes fly-right-one {
+            0% {
+                transform: scale(0.3) translateX(-10vw);
+            }
+            10% {
+                transform: translateY(2vh) translateX(10vw) scale(0.4);
+            }
+            20% {
+                transform: translateY(0vh) translateX(30vw) scale(0.5);
+            }
+            30% {
+                transform: translateY(4vh) translateX(50vw) scale(0.6);
+            }
+            40% {
+                transform: translateY(2vh) translateX(70vw) scale(0.6);
+            }
+            50% {
+                transform: translateY(0vh) translateX(90vw) scale(0.6);
+            }
+            60% {
+                transform: translateY(0vh) translateX(110vw) scale(0.6);
+            }
+            100% {
+                transform: translateY(0vh) translateX(110vw) scale(0.6);
+            }
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 1200px) {
+            .message-container h2 {
+                font-size: 2.3rem;
+            }
+            .message-content {
+                font-size: 1.15rem;
+            }
+            .message-icon {
+                font-size: 3.7rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .message-container h2 {
+                font-size: 2.1rem;
+            }
+            .message-content {
+                font-size: 1.1rem;
+            }
+            .message-icon {
+                font-size: 3.5rem;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            .nav-items a {
+                font-size: 0.95rem;
+            }
+            .btn {
+                font-size: 0.95rem;
+                padding: 11px 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 100px 15px 30px;
+            }
+            
+            .message-container {
+                padding: 40px 25px;
+            }
+            
+            .message-container h2 {
+                font-size: 1.8rem;
+            }
+            
+            .message-content {
+                font-size: 1rem;
+                margin-bottom: 25px;
+            }
+            
+            .message-icon {
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+            
+            .logo {
+                font-size: 1.3rem;
+            }
+            
+            .logo img {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .nav-items a {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+            }
+            
+            .sidebar a {
+                font-size: 0.95rem;
+                padding: 12px 20px;
+            }
+            
+            footer p {
+                font-size: 1rem;
+            }
+            
+            header {
+                left: 15px;
+                right: 15px;
+                width: calc(100% - 30px);
+                padding: 12px 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .message-container h2 {
+                font-size: 1.6rem;
+            }
+            
+            .message-content {
+                font-size: 0.95rem;
+            }
+            
+            .message-icon {
+                font-size: 2.5rem;
+            }
+            
+            .btn {
+                font-size: 0.9rem;
+                padding: 9px 18px;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .logo img {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .menu-btn {
+                font-size: 20px;
+            }
+            
+            footer p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .message-container {
+                padding: 30px 20px;
+            }
+            
+            .message-container h2 {
+                font-size: 1.4rem;
+            }
+            
+            .message-content {
+                font-size: 0.9rem;
+            }
+            
+            .message-icon {
+                font-size: 2.2rem;
+            }
+            
+            .btn {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .bird-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <div class="logo">
+            <img src="{{url_for('static',filename='images/logo.png')}}" alt="logo">
+            <span>Find Your Book</span>
+        </div>
+        
+        <!-- Navigation items for desktop -->
+        <div class="nav-items">
+            <a href="/home"><i class="fas fa-home"></i> Home</a>
+            <a href="/user_login1"><i class="fas fa-user"></i> User Login</a>
+            <a href="/user_signup1"><i class="fas fa-user-plus"></i> User Signup</a>
+        </div>
+        
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <div id="sidebar" class="sidebar">
+        <a href="#" onclick="toggleSidebar()"><i class="fas fa-times"></i> Close</a>
+        <a href="/home"><i class="fas fa-home"></i> Home</a>
+        <a href="/user_login1"><i class="fas fa-user"></i> User Login</a>
+        <a href="/user_signup1"><i class="fas fa-user-plus"></i> User Signup</a>
+    </div>
+
+    <div class="content">
+        <div class="message-container">
+            <div class="message-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            
+            <h2>Important Message</h2>
+            
+            <div class="message-content">
+                {{ message }}
+            </div>
+            
+            <div class="action-buttons">
+                <a href="/home" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Go Home
+                </a>
+                <a href="/user_login1" class="btn btn-secondary">
+                    <i class="fas fa-user"></i> User Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Find Your Book | Built with ❤️ by Sai Pavan</p>
+    </footer>
+
+    <!-- Realistic Flying Birds -->
+    <div class="bird-container bird-container-one">
+       <div class="bird bird-one"></div>
+    </div>        
+    <div class="bird-container bird-container-two">
+      <div class="bird bird-two"></div>
+    </div>  
+     <div class="bird-container bird-container-three">
+       <div class="bird bird-three"></div>
+     </div> 
+     <div class="bird-container bird-container-four">
+       <div class="bird bird-four"></div>
+     </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+        
+        let lastScrollTop = 0;
+        const header = document.getElementById('header');
+        
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.scrollY;
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                header.classList.add('hide');
+            } else if (scrollTop < lastScrollTop) {
+                header.classList.remove('hide');
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        });
+        
+        // Auto-detect message type and change icon accordingly
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageContainer = document.querySelector('.message-content');
+            const messageIcon = document.querySelector('.message-icon i');
+            const messageText = messageContainer.textContent.toLowerCase();
+            
+            if (messageText.includes('success') || messageText.includes('thank you') || messageText.includes('welcome')) {
+                messageIcon.className = 'fas fa-check-circle';
+                messageIcon.style.color = '#28a745';
+            } else if (messageText.includes('error') || messageText.includes('failed') || messageText.includes('invalid')) {
+                messageIcon.className = 'fas fa-exclamation-circle';
+                messageIcon.style.color = '#dc3545';
+            } else if (messageText.includes('warning') || messageText.includes('attention')) {
+                messageIcon.className = 'fas fa-exclamation-triangle';
+                messageIcon.style.color = '#ffc107';
+            }
+        });
+    </script>
+</body>
+</html>
